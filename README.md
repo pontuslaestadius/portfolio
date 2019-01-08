@@ -3,7 +3,6 @@
 This is a list of all publically available projects which are in a presentable state I have developed or contributed on.
 They are sorted in their current project status.
 
-[]()
 | Project name | Project status | Started |
 | ------------- |:-------------:| -----:|
 | [carpet](https://github.com/pontuslaestadius/carpet) | FINISHED | 2018 |
