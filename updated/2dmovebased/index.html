@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>2DG</title>
+    <script src="howler.min.js"></script>
+    <script src="game.js"></script>
+    <script src="components/chicken.js"></script>
+    <script src="components/helper.js"></script>
+    <script src="components/boss_projectile.js"></script>
+    <script src="components/player.js"></script>
+    <script src="components/projectile.js"></script>
+    <script src="components/level.js"></script>
+    <script src="components/bossdrop.js"></script>
+    <script src="components/platform.js"></script>
+    <style>
+      img {display: none}
+      * { margin:0; padding:0; } /* to remove the top and left whitespace */
+      html, body { width:100%; height:100%; } /* just to be sure these are full screen*/
+      canvas { display:block; } /* To remove the scrollbars */
+    </style>
+  </head>
+  <body  style="background-color:grey; text-align: center;" onkeydown="keyDown(event)" onkeyup="keyUp(event)" onload="initalize()">
+    <img src="images/grassMid%20kopia.png" id="grass" style="display:none;"/>
+    <img src="images/grassCenter%20kopia.png" id="grassCenter" style="display:none;"/>
+    <img src="images/vapen1.png" id="vapen1" style="display:none;"/>
+    <img src="images/vapen1_player.png" id="vapen1_player" style="display:none;"/>
+    <img src="images/vapen1_player_flip.png" id="vapen1_player_flip" style="display:none;"/>
+    <img src="images/vapen2.png" id="vapen2" style="display:none;"/>
+    <img src="images/vapen2_player.png" id="vapen2_player" style="display:none;"/>
+    <img src="images/vapen2_player_flip.png" id="vapen2_player_flip" style="display:none;"/>
+    <img src="images/vapen3.png" id="vapen3" style="display:none;"/>
+    <img src="images/vapen3_player.png" id="vapen3_player" style="display:none;"/>
+    <img src="images/vapen3_player_flip.png" id="vapen3_player_flip" style="display:none;"/>
+    <img src="images/walk_1R.png" id="walk_1R" style="display:none;"/>
+    <img src="images/walk_1L.png" id="walk_1L" style="display:none;"/>
+    <img src="images/walk_2R.png" id="walk_2R" style="display:none;"/>
+    <img src="images/walk_2L.png" id="walk_2L" style="display:none;"/>
+    <img src="images/walk_3R.png" id="walk_3R" style="display:none;"/>
+    <img src="images/walk_3L.png" id="walk_3L" style="display:none;"/>
+    <img src="images/enemy1_1R.png" id="enemy1_1R" style="display:none;"/>
+    <img src="images/enemy1_1L.png" id="enemy1_1L" style="display:none;"/>
+    <img src="images/enemy1_2R.png" id="enemy1_2R" style="display:none;"/>
+    <img src="images/enemy1_2L.png" id="enemy1_2L" style="display:none;"/>
+    <img src="images/enemy1_3R.png" id="enemy1_3R" style="display:none;"/>
+    <img src="images/enemy1_3L.png" id="enemy1_3L" style="display:none;"/>
+    <img src="images/enemy2_1R.png" id="enemy2_1R" style="display:none;"/>
+    <img src="images/enemy2_1L.png" id="enemy2_1L" style="display:none;"/>
+    <img src="images/enemy2_2R.png" id="enemy2_2R" style="display:none;"/>
+    <img src="images/enemy2_2L.png" id="enemy2_2L" style="display:none;"/>
+    <img src="images/enemy2_3R.png" id="enemy2_3R" style="display:none;"/>
+    <img src="images/enemy2_3L.png" id="enemy2_3L" style="display:none;"/>
+    <img src="images/box1.png" id="box1"/>
+    <img src="images/box2.png" id="box2"/>
+    <img src="images/box3.png" id="box3"/>
+    <img src="images/box4.png" id="box4"/>
+    <img src="images/box5.png" id="box5"/>
+    <img src="images/door_openMid%20kopia.png" id="doorMid"/>
+    <img src="images/door_openTop%20kopia.png" id="doorTop"/>
+    <img src="images/door_closedMid%20kopia.png" id="doorMidClosed"/>
+    <img src="images/door_closedTop%20kopia.png" id="doorTopClosed"/>
+    <img src="images/castleCenter%20kopia.png" id="castleCenter"/>
+    <img src="images/castleMid%20kopia.png" id="castleMid"/>
+    <img src="images/signRight%20kopia.png" id="signRight"/>
+    <img src="images/ignitionRight_1.png" id="ignitionRight_1"/>
+    <img src="images/ignitionLeft_1.png" id="ignitionLeft_1"/>
+    <img src="images/ignitionRight_2.png" id="ignitionRight_2"/>
+    <img src="images/ignitionLeft_2.png" id="ignitionLeft_2"/>
+    <img src="images/tochLit%20kopia.png" id="tLit_1"/>
+    <img src="images/tochLit2%20kopia.png" id="tLit_2"/>
+    <img src="images/window%20kopia.png" id="window1"/>
+    <img src="images/grassCliffLeft%20kopia.png" id="grassCliffLeft"/>
+    <img src="images/grassCliffRight%20kopia.png" id="grassCliffRight"/>
+    <img src="images/boss1_right1.png" id="boss1_right1"/>
+    <img src="images/boss1_right2.png" id="boss1_right2"/>
+    <img src="images/boss1_right3.png" id="boss1_right3"/>
+    <img src="images/boss1_left1.png" id="boss1_left1"/>
+    <img src="images/boss1_left2.png" id="boss1_left2"/>
+    <img src="images/boss1_left3.png" id="boss1_left3"/>
+    <img src="images/snowCliffLeft%20kopia.png" id="stoneCliffLeft"/>
+    <img src="images/snowCliffRight%20kopia.png" id="stoneCliffRight"/>
+    <img src="images/snowMid%20kopia.png" id="stoneCenter"/>
+    <img src="images/bossdrop.png" id="bossdropImage"/>
+    <img src="images/buttonup.png" id="buttonUp"/>
+    <img src="images/buttonDown.png" id="buttonDown"/>
+    <img src="images/shotgun.png" id="shotgun"/>
+    <img src="images/bossprojectile_left.png" id="bossprojectile_left"/>
+    <img src="images/bossprojectile_right.png" id="bossprojectile_right"/>
+    <img src="images/bossprojectile_left_2.png" id="bossprojectile_left_2"/>
+    <img src="images/bossprojectile_right_2.png" id="bossprojectile_right_2"/>
+    <img src="images/chicken.png" id="chickenImage"/>
+    <img src="images/chicken_flip.png" id="chickenImage_flip"/>
+    <img src="images/crack1.png" id="crack1"/>
+    <img src="images/crack2.png" id="crack2"/>
+    <img src="images/crack3.png" id="crack3"/>
+    <canvas onclick="onClick(event)" id="myCanvas" ></canvas>
+  </body>
+</html>
