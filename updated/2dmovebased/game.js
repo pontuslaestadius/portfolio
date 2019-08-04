@@ -2,10 +2,14 @@
  * Made my Pontus Laestadius Te2K for a school assignment. Jan 2013-Feb 2013.
  *
  * Updated version was made in August of 2019.
+ *
+ * Player:
+ * https://rvros.itch.io/animated-pixel-hero
+ *
+ * Background:
+ * https://edermunizz.itch.io/free-pixel-art-forest
+ *
  */
-
-// Texture size
-const size = 35;
 
 // Canvas
 let c;
@@ -14,7 +18,6 @@ let c;
 let ctx;
 
 var go = true;
-var lampaAni = 0;
 var weaponranks = [1, 1, 1];
 var bossdead = false;
 var onfirstpause = true;
@@ -34,10 +37,10 @@ var shop = [];
 var bossprojectile = [];
 var chicken = [];
 const config = {
-    "fps": 30,
+    "fps": 40,
     "lang": "language.SV_SE",
     "weather": {
-        "max_items": 80
+        "max_items": 50
     },
     "font": {
         "title": "50px Helvetica",
@@ -84,10 +87,6 @@ const config = {
         }
     }
 };
-const theme = new Howl(config.sound.theme);
-const gunSound = new Howl(config.sound.gun);
-const dragonSound = new Howl(config.sound.dragon);
-const chickenSound = new Howl(config.sound.chicken);
 function drawI(img, x, y, w, h) {
     if (!img) {
         ctx.fillRect(x, y, w, h);
@@ -102,30 +101,62 @@ function drawI(img, x, y, w, h) {
 function initalize() {
     c = document.getElementById("myCanvas");
     ctx = c.getContext("2d");
-    window.setInterval(gameloop, 1000/config.fps);
+
+    window.setInterval(() => timeFn(gameloop), 1000/config.fps);
     function resizeCanvas() {
         c.width = window.innerWidth;
-        c.height = window.innerHeight;
+        c.height = 180;
+        updateLayers();
     }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas, false);
     player.push(new Player());
-    platform.push(new Platform());
     Level.set(1);
+}
+
+let pv = null;
+function updateLayers(dx = 0) {
+    if (Math.floor(dx) == Math.floor(pv)) {
+        return;
+    }
+    pv = dx;
+    let c2 = document.getElementById("layer2");
+    let ctx2 = c2.getContext("2d");
+    c2.width = c.width;
+    c2.height = c.height + 200;
+    let offset = -150;
+    let h = 500;
+    let w = 600;
+
+    let drawer = (img, ratio = 1) => {
+        for (var i = -w*2; i < c.width * 2; i += w) {
+            ctx2.drawImage(img, i + (dx * ratio) % w, offset, w +2, h);
+        }
+    }
+
+    drawer(top_layer, 0.5);
+    drawer(layer_83, 0.1);
+    drawer(middle_layer, 0.15);
+    drawer(layer_7L, 0.15);
+    drawer(bottom_layer, 1.5);
 }
 function timeFn(fn) {
     const before = performance.now();
     fn();
     const after = performance.now();
     const duration = after - before;
-    if (duration > 500/config.fps) {
+    if (duration > (1000 / config.fps) / 2) {
         console.warn(`${fn.name} took ${duration} ms`);
+        // If the game loop is too slow, we reduce the number of unnecessery particles.
+        if (config.max_items > 0) {
+            config.max_items--;
+        }
     }
 }
 function gameloop() {
     if(go){
         updatePositions();
-        timeFn(repaint);
+        repaint();
     } else {
         pause();
     }
@@ -165,7 +196,6 @@ function updatePositions() {
 }
 function repaint() {
     ctx.clearRect(0, 0, c.width, c.height);
-    background();
     while (weather.length < config.weather.max_items) {
         new Weather();
     }
@@ -188,132 +218,16 @@ function repaint() {
         weather
     ]
         .forEach(x => x.forEach(y => y.paint(ctx)));
-    // Målar ut overlay.
-    hud();
-}
-function background() {
-    // Målar ut backgrunden på tredje nivån.
-    if (level == 3){
-        drawI(window1, 80, 350 - 100, 35, 35);
-        drawI(window1, 80 + 160, 350 - 100, 35, 35);
-        drawI(window1, 80 + 160 * 2, 350 - 100, 35, 35);
-        if (lampaAni >= 1){
-            drawI(tLit_2, 0, 350 - 100, 35, 35);
-            drawI(tLit_1, 160, 350 - 100, 35, 35);
-            drawI(tLit_2, 160 * 2, 350 - 100, 35, 35);
-            drawI(tLit_1, 160 * 3, 350 - 100, 35, 35);
-        } else {
-            drawI(tLit_1, 0, 350 - 100, 35, 35);
-            drawI(tLit_2, 160, 350 - 100, 35, 35);
-            drawI(tLit_1, 160 * 2, 350 - 100, 35, 35);
-            drawI(tLit_2, 160 * 3, 350 - 100, 35, 35);
-        }
-        lampaAni = lampaAni >= 2 ? 0 : lampaAni + 0.2;
-    }
-    ground();
-}
-function hud() {
-    ctx.fillStyle="#000000";
-    ctx.fillRect(0,0, c.width, 50);
-    let this_player = player[0];
-    ctx.fillStyle="#FF0000";
-    for (var i = 0; i < this_player.health; i++) {
-        ctx.fillRect(10 + i * 14, 10, 10, 30);
-    }
-    ctx.fillStyle="#FFFFFF";
-    for (var i = 0; i < player[0].ammo; i++) {
-        ctx.fillRect(100 + i * 5, 10, 3, 30);
-    }
-    for (var i = 0; i < player[0].mag; i++) {
-        ctx.fillRect(200 + i * 14, 10, 10, 30);
-    }
-    ctx.fillStyle="#FFFF00";
-    for (var i = 0; i < gold / 100; i++) {
-        ctx.fillRect(300 + i * 5, 10, 3, 30);
-    }
-    drawI(eval(`vapen${this_player.weapon}`), 500, 10, 60, 30);
-    ctx.fillStyle="#000000";
 }
 function keyDown(e){
     if (!player[0]) {
         return;
     }
+    player[0].keyDown(e);
     switch (e.keyCode) {
-    case 88: // X    Reset game, with increased difficulty.
-        if (!bossdead) {
-            return;
-        }
-        level = 1;
-        bossdead = false;
-        dif++;
-        for (var i = 0; i < dif; i++) {
-            boss.push(new Boss());
-        }
-        player.forEach(x => {
-            x.x = 30;
-            x.y = 395;
-        });
-        break;
-    case 77: // M
-        if (!multiplayer){
-            weaponranks = 1;
-            player.push(new Player());
-        }
-        multiplayer = true;
-        break;
-    case 87: // W
-        if (!multiplayer){ return; }
-        if (!player[1].alreadyJumping){ return; }
-        player[1].alreadyJumping = true;
-        player[1].jumpNow = true;
-        break;
-    case 70: // F
-        if (!multiplayer){ return; }
-        player[1].fire();
-        break;
-    case 68: // D
-        if (!multiplayer){ return; }
-        player[1].xRight = 2;
-        break;
-    case 65: // A
-        if (!multiplayer){ return; }
-        player[1].xLeft = -2;
-        break;
-    case 66: // B
-        player.forEach(x => x.buy());
-        break;
-    case 84: // Y
-        if (!multiplayer){ return; }
-        player[1].switchWeaponUp();
-        break;
-    case 89: // T
-        if (!multiplayer){ return; }
-        player[1].switchWeaponDown();
-        break;
-    case 189: // .
-        player[0].switchWeaponUp();
-        break;
-    case 190: // -
-        player[0].switchWeaponDown();
-        break;
     case 80: // P
         go = !go;
         theme[go ? "play" : "pause"]();
-        break;
-    case 32: // [[space]]
-        player[0].fire();
-        break;
-    case 39: // ->
-        player[0].xRight = 2;
-        break;
-    case 37: // <-
-        player[0].xLeft = -2;
-        break;
-    case 38: // [[up arrow]]
-        let {x,y,w,h, alreadyJumping} = player[0];
-        if (alreadyJumping){ return; }
-        player[0].alreadyJumping = true;
-        player[0].jumpNow = true;
         break;
     }
 }
@@ -321,65 +235,9 @@ function keyUp(e){
     if (!player[0]) {
         return;
     }
-    switch (e.keyCode) {
-    case 68: // D
-        player[1].xRight = 0;
-        break;
-    case 65: // A
-        player[1].xLeft = 0;
-        break;
-    case 39: // ->
-        player[0].xRight = 0;
-        break;
-    case 37: // <-
-        player[0].xLeft = 0;
-        break;
-    }
+    player[0].keyUp(e);
 }
-function onClick(e){
-    if (!player[0]) {
-        return;
-    }
-    const { clientX, clientY } = e;
-    if (!go && clientX >= 10 && !multiplayer){
-        if (clientY >= 160 && clientY <= 190 && weaponranks[0] < 5 && gold >= 100){
-            weaponranks[0] += 1;
-            gold -= 100;
-        }
-        if (clientY >= 160 + 50 && clientY <= 190 + 50 && weaponranks[0] > 1 && gold >= 100){
-            weaponranks[0] -= 1;
-            gold -= 100;
-        }
-        if (clientY >= 260 && clientY <= 290 && weaponranks[1] < 5 && gold >= 150){
-            weaponranks[1] += 1;
-            gold -= 150;
-        }
-        if (clientY >= 260 + 50 && clientY <= 290 + 50 && weaponranks[1] > 1 && gold >= 150){
-            weaponranks[1] -= 1;
-            gold -= 150;
-        }
-        if (clientY >= 360 && clientY <= 390 && weaponranks[2] < 5 && gold >= 200){
-            weaponranks[2] += 1;
-            gold -= 200
-        }
-        if (clientY >= 360 + 50 && clientY <= 390 + 50 && weaponranks[2] > 1 && gold >= 200){
-            weaponranks[2] -= 1;
-            gold -= 200;
-        }
-    }
-}
-function ground() {
-    let base = grass;
-    let center = grassCenter;
-    if (level === 3) {
-        base = castleMid;
-        center = castleCenter;
-    }
-    for (var i = 0; i <= c.width / size; i++) {
-        drawI(base, i*size, c.height -2*size, size, size);
-        drawI(center, i*size, c.height -size, size, size);
-    }
-}
+
 class Enemy {
     constructor() {
         this.x = 100 + Helper.roll(150);
@@ -485,56 +343,55 @@ Enemy.prototype.paint = function (ctx) {
 class Weather {
     constructor(options = {}) {
         this.collision = false;
-        this.color = "#2E64FE";
-        this.direction = false;
-        this.levelWeather = level;
-        this.lifetime = 0;
-        this.radius = Helper.roll(3);
-        this.w = this.radius;
-        this.speed = 10 + Helper.roll(3) + this.radius;
+        this.dx = -(10 + Helper.roll(5));
+        this.h = 1 + Helper.roll(2);
+        this.w = this.h -1;
         this.x = Helper.roll(c.width);
-        this.y = Helper.roll(50);
+        this.y = Helper.roll(c.height/2);
         this.id = Helper.roll(9999);
-        Object.entries(options).forEach(([key, val]) => {
-            this[key] = val;
-        });
+        this.lifetime = 0;
+        this.speed = 200 / config.fps;
         weather.push(this);
     }
 }
 Weather.prototype.updatePosition = function () {
-    if (this.lifetime > config.fps * 2){
+    if (this.lifetime > config.fps ||
+        Math.floor(this.h) === 0 ||
+        Math.floor(this.h) === 0){
         weather.splice(weather.findIndex(x => x.id === this.id), 1);
         delete this;
         return;
     }
-    if (this.speed < 5){
-        this.direction = Helper.roll(3);
-    }
-    if (this.y < c.height - size * 2 + Helper.roll(5)){
-        this.y += this.speed;
-        this.x += this.direction;
-    } else {
+    if (this.y > c.height - 10) {
         this.collision = true;
     }
     if (!this.collision) {
-        this.collision = this.collision_objects().some(x => x.y <= this.y && x.y + x.h >= this.y && this.x >= x.x && x.x + x.w >= this.x)
+        this.y += this.speed;
+        this.x += this.dx;
+        let {x, y, w, h} = player[0];
+        w -= 40;
+        x += 30;
+        h += 25;
+        y += 5;
+
+        if (this.y > y && this.y < y+h && this.x > x && this.x  < x + w) {
+            this.collision = 'player';
+        }
+    } else if (this.collision == 'player') {
+        this.w += 0.3;
+        this.h *= 1.1;
+        this.y += this.speed / 5;
+        this.x += this.dx /10;
+        this.lifetime += this.speed * 2;
     } else {
-        this.w *= 1.1;
-        this.radius = Math.min(1, this.radius - 0.1);
-        this.speed = 0;
-        this.lifetime += 10;
+        this.w *= 1.2;
+        this.h -= 0.3;
+        this.lifetime += this.speed;
     }
 };
-Weather.prototype.collision_objects = function () {
-    return [
-        ...platform,
-        ...drop,
-        ...player
-    ];
-}
 Weather.prototype.paint = function (ctx) {
-    ctx.fillStyle=this.color;
-    ctx.fillRect(this.x - this.w/2, this.y, this.w, this.radius);
+    ctx.fillStyle=`rgb(0, 0, ${200 - this.lifetime * 3})`;
+    ctx.fillRect(this.x - this.w/2, this.y, this.w, this.h);
 };
 class Drop {
     constructor(options = {}) {
@@ -602,11 +459,5 @@ Shop.prototype.paint = function (ctx) {
     ctx.fillStyle="#000000";
     ctx.fillText(`${this.price}`,this.x, this.y - 43);
     drawI(this.icon,this.x - 10, this.y - 40, 60, 20);
-    if (player[0].gotWeapon3){
-        drawI(doorMid, this.x, this.y, 35, 35);
-        drawI(doorTop, this.x, this.y - 35, 35, 35);
-    } else {
-        drawI(doorMidClosed, this.x, this.y, 35, 35);
-        drawI(doorTopClosed, this.x, this.y - 35, 35, 35);
-    }
+    ctx.fillRect(this.x, this.y, 35, 35);
 };

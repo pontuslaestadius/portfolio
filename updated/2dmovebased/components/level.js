@@ -1,7 +1,6 @@
 
 const Level = {
     set: (n = 1) => {
-        console.log(n);
         if (!Level.exists(n)) {
             return;
         }
@@ -36,17 +35,16 @@ const Level = {
     __level__: {
         1: {
             alloc: () => {
-                document.body.style.backgroundColor = "#A9e2F3";
+                document.body.style.backgroundImage = "url('resources/background/Layer_0010_1.png')";
+                return;
                 new Shop({
                     x: 160,
                     y: c.height - 3 * size,
-                    icon: vapen3_player,
                     price: 500
                 });
                 new Shop({
                     x: 230,
                     y: c.height - 3 * size,
-                    icon: vapen2_player,
                     price: 200
                 });
             },
