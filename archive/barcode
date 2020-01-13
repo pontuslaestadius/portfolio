@@ -1,0 +1,87 @@
+#!/bin/bash
+#
+# Licenced under MIT
+#
+# Author: Pontus Laestadius
+#         pontus.laestadius@gmail.com
+#
+# Implements and encodes EAN-13 standardised barcodes.
+#
+# Input: 13 digits. e.i. 012345678901
+# Output: a terminal encoded EAN-13 barcode.
+#
+
+if [ -n "$1" ]; then
+  inp="$1"
+else
+  inp="012345678901"
+  echo "No input given, using default: ${inp}"
+fi
+
+set -eu
+set -o pipefail
+
+reset=$'\e[49m'
+white=$'\e[47m'
+black=$'\e[40m'
+
+l_code=(
+  "0001101",
+  "0011001",
+  "0010011",
+  "0111101",
+  "0100011",
+  "0110001",
+  "0101111",
+  "0111011",
+  "0110111",
+  "0001011"
+)
+
+g_code=(
+  "0100111",
+  "0110011",
+  "0011011",
+  "0100001",
+  "0011101",
+  "0111001",
+  "0000101",
+  "0010001",
+  "0001001",
+  "0010111"
+)
+
+r_code=(
+  "1110010",
+  "1100110",
+  "1101100",
+  "1000010",
+  "1011100",
+  "1001110",
+  "1010000",
+  "1000100",
+  "1001000",
+  "1110100"
+)
+
+for height in {0..10}; do
+  for (( i=0; i<${#inp}; i++ )); do
+    if [ $i -eq 0 ]; then
+      pattern=${l_code[${inp:$i:1}]}
+    elif [ $i -lt 6 ]; then
+      pattern=${l_code[${inp:$i:1}]}
+    elif [ $i -eq 6 ]; then
+      pattern=${g_code[${inp:$i:1}]}
+    else
+      pattern=${r_code[${inp:$i:1}]}
+    fi
+
+    [ $i -gt 5 ] && pattern="$pattern" || pattern="0$pattern"
+    for (( j=0; j<${#pattern}; j++ )); do
+      [ "${pattern:$j:1}" == "1" ] && echo -n "$black " || echo -n "$white "
+    done
+  done
+  echo -e "$reset"
+done
+
+echo -e "$reset"
